@@ -2,7 +2,7 @@
 
 if (defined('SF_LIB_DIR'))
 {
-  require_once (SF_LIB_DIR);
+  require_once (SF_LIB_DIR . '/autoload/sfCoreAutoload.class.php');
 }
 else
 {
