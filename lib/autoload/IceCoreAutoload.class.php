@@ -1,6 +1,13 @@
 <?php
 
-require_once '/www/libs/symfony-1.4.x/lib/autoload/sfCoreAutoload.class.php';
+if (defined('SF_LIB_DIR'))
+{
+  require_once (SF_LIB_DIR);
+}
+else
+{
+  require_once '/www/libs/symfony-1.4.x/lib/autoload/sfCoreAutoload.class.php';
+}
 
 class IceCoreAutoload extends sfCoreAutoload
 {
