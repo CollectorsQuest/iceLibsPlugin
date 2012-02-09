@@ -537,7 +537,7 @@ class IceStatic
    *
    * @return array
    */
-  static public function extractPhoneNumbers($text, $strict = false, &$count = 0, $code = null)
+  static public function extractPhoneNumbers($text, $strict = false, &$count = 0, &$code = null)
   {
     static $phone_codes = null;
 
@@ -571,7 +571,7 @@ class IceStatic
         $parts = explode($s, $text);
         foreach ($parts as $part)
         {
-          $numbers = array_merge($numbers, self::extractPhoneNumbers($part, $strict, $count, &$code));
+          $numbers = array_merge($numbers, self::extractPhoneNumbers($part, $strict, $count, $code));
         }
 
         // Remove any duplicates & sort
