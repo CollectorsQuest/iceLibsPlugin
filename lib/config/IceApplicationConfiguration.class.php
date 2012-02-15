@@ -27,7 +27,7 @@ class IceApplicationConfiguration extends sfApplicationConfiguration
      */
     $request = $event->getSubject();
 
-    if ('m.' == substr($_SERVER['HTTP_HOST'], 0, 2))
+    if ('m.' == substr($request->getHost(), 0, 2))
     {
       if (preg_match('#(Mobile/.+Safari|AppleWebKit/)#i', $request->getHttpHeader('User-Agent')))
       {

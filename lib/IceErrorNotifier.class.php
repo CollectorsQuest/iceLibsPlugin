@@ -49,8 +49,8 @@ class IceErrorNotifier
     $data['POST'] = var_export($_POST, true);
     $data['SERVER'] = var_export($_SERVER, true);
 
-    $subject = "ERROR: {$_SERVER['HTTP_HOST']} Exception - $env - {$data['message']}";
-    $body = "Exception notification for {$_SERVER['HTTP_HOST']}, environment $env - " . date('H:i:s j F Y'). "\n\n";
+    $subject = "ERROR: {$request->getHost()} Exception - $env - {$data['message']}";
+    $body = "Exception notification for {$request->getHost()}, environment $env - " . date('H:i:s j F Y'). "\n\n";
     $body .= $exception . "\n\n\n\n\n";
     $body .= "Additional data: \n\n";
 
