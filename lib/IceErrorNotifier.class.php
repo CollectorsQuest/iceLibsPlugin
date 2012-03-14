@@ -31,11 +31,11 @@ class IceErrorNotifier
     if ($conf = sfContext::getInstance()->getConfiguration())
     {
       $env = $conf->getEnvironment();
-    }
 
-    if ($env != 'prod')
-    {
-      return;
+      if ($conf->isDebug())
+      {
+        return;
+      }
     }
 
     $data = array();

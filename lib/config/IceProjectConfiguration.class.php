@@ -4,6 +4,8 @@ class IceProjectConfiguration extends sfProjectConfiguration
 {
   public function setup()
   {
+    parent::setup();
+
     mb_language('English');
     mb_internal_encoding('UTF-8');
 
