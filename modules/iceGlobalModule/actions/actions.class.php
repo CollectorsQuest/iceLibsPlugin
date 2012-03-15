@@ -55,7 +55,10 @@ class iceGlobalModuleActions extends IceActions
     /**
      * @see http://php-fpm.org/wiki/Features#fastcgi_finish_request.28.29
      */
-    fastcgi_finish_request();
+    if (sfConfig::get('app_ice_captcha_early_fcgi_finish_request', true))
+    {
+      fastcgi_finish_request();
+    }
 
     $captchas   = sfContext::getInstance()->getUser()->getAttribute('captchas', array(), 'ice_captcha');
     $captchas   = array_reverse($captchas);
