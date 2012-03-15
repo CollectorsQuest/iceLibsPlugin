@@ -522,7 +522,9 @@ class Kint
 
   private static function _kintLine($file, $line = NULL)
   {
-    define('DIR_ROOT', realpath( __DIR__ . '/../../../../' ) . '/');
+    if ( !defined('DIR_ROOT') ) {
+      define('DIR_ROOT', realpath( __DIR__ . '/../../../../' ) . '/');
+    }
 
     if (strpos($file, DIR_ROOT) === 0) {
       $shortenedName = 'DIR_ROOT' . DIRECTORY_SEPARATOR . substr($file, strlen(DIR_ROOT));
