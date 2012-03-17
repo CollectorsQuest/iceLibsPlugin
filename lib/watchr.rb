@@ -23,6 +23,12 @@ def crawl(path, max_depth=nil, include_directories=false, depth=0, &block)
  end
 end
 
+def lessc(input, output, web)
+  print "[" + Time.now.strftime("%I:%M:%S") + "] compiling #{input.inspect.sub(web, '')}... "
+  system "lessc #{input} #{output}"
+  puts 'done'
+end
+
 def plessc(input, output, web)
   print "[" + Time.now.strftime("%I:%M:%S") + "] compiling #{input.inspect.sub(web, '')}... "
   system "php #{File.dirname(__FILE__)}/../data/bin/plessc #{input} #{output}"
