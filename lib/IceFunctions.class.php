@@ -83,6 +83,12 @@ class IceFunctions
    */
   public static function array_vertical_sort($items, $columns, $keep_keys = false)
   {
+    /** No need to do anything for $columns less than 2 */
+    if ((int) $columns < 2)
+    {
+      return $items;
+    }
+
     $sorted = array();
     $total = count($items);
     $keys = ($items instanceof PropelObjectCollection) ? range(0, $items->count() - 1) : array_keys((array) $items);
@@ -108,7 +114,7 @@ class IceFunctions
 
   /**
    * @static
-   * 
+   *
    * @param  array    $array  Array to sort
    * @param  string   $sortby  Sort by this key
    * @param  string   $order  Sort order asc/desc (ascending or descending).
@@ -355,7 +361,7 @@ class IceFunctions
    * @static
    * @param  integer $number
    * @param  integer $length
-   * 
+   *
    * @return string
    */
   public static function udihash($number, $length = 5)
@@ -392,7 +398,7 @@ class IceFunctions
    * @static
    * @param  integer $int
    * @param  array $chars
-   * 
+   *
    * @return string
    */
   private static function base62($int, $chars = array())
