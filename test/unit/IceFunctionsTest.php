@@ -3,7 +3,7 @@
 require_once dirname(__FILE__).'/../../../../test/bootstrap/unit.php';
 require_once dirname(__FILE__).'/../../lib/IceFunctions.class.php';
 
-$t = new lime_test(27, new lime_output_color());
+$t = new lime_test(30, array(new lime_output_color()));
 
 $t->diag('array_filter_recursive()');
 
@@ -206,3 +206,17 @@ $t->diag('udihash()');
   {
     $t->is(IceFunctions::udihash($id, 5), $hashes[$id]);
   }
+
+$t->diag('http_build_url()');
+
+  $url = 'http://www.google.com/analytics';
+  $parts = array('path' => '/webhp');
+  $t->is(IceFunctions::http_build_url($url, $parts), 'http://www.google.com/webhp');
+
+  $url = 'http://www.google.com/search?q=help';
+  $parts = array('query' => 'hl=bg');
+  $t->is(IceFunctions::http_build_url($url, $parts, HTTP_URL_JOIN_QUERY), 'http://www.google.com/search?q=help&hl=bg');
+
+  $url = 'http://www.google.com/search?q=help';
+  $parts = array('query' => 'hl=bg');
+  $t->is(IceFunctions::http_build_url($url, $parts, HTTP_URL_REPLACE), 'http://www.google.com/search?hl=bg');

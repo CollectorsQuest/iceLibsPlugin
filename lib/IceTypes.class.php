@@ -407,4 +407,49 @@ class IceTypeUrl extends IceTypes
 
     return parent::offsetGet($key);
   }
+
+  /**
+   * @param  string  $key
+   * @param  mixed   $value
+   *
+   * @return IceTypeUrl
+   */
+  public function addQueryString($key, $value)
+  {
+    $params = array();
+    if (!empty($this['parts']['query'])) {
+      parse_str($this['parts']['query'], $params);
+    }
+
+    if (!isset($params[(string) $key])) {
+      $params[(string) $key] = $value;
+    }
+
+    $this['location'] = IceFunctions::http_build_url(
+      $this['location'],
+      array('query' => http_build_query($params))
+    );
+
+    return $this;
+  }
+
+  public function replaceQueryString($key, $value)
+  {
+    $this->removeQueryString($key);
+    $this->addQueryString($key, $value);
+
+    return $this;
+  }
+
+  public function removeQueryString($key)
+  {
+    $url = $this['location'];
+
+    $url = preg_replace('/(.*)(\?|&)' . $key . '=[^&]+?(&)(.*)/i', '$1$2$4', $url . '&');
+    $url = rtrim($url, '&');
+
+    $this['location'] = $url;
+
+    return $this;
+  }
 }
