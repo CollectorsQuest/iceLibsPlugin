@@ -394,7 +394,7 @@ class Lessc
     // the operator for it to be a mathematical operator.
 
     $needWhite = false;
-    if (!$this->inParens && preg_match('/\s/', $this->buffer{$this->count - 1})) {
+    if (!$this->inParens && preg_match('/\s/', substr($this->buffer, $this->count - 1, 1))) {
     $needWhite = true;
   }
 
@@ -438,7 +438,7 @@ class Lessc
       $ss = $this->seek();
 
       $needWhite = false;
-      if (!$this->inParens && preg_match('/\s/', $this->buffer{$this->count - 1})) {
+      if (!$this->inParens && preg_match('/\s/', substr($this->buffer, $this->count - 1, 1))) {
         $needWhite = true;
       }
     }
@@ -483,8 +483,7 @@ class Lessc
       $value = null;
       if ($this->variable($var)) {
         $value = array('variable', $var);
-      } elseif ($this->buffer {$this->count}
-      == "(" && $this->expression($exp)) {
+      } elseif (substr($this->buffer, $this->count, 1) == "(" && $this->expression($exp)) {
         $value = $exp;
       } else {
         $this->seek($s);
@@ -966,8 +965,7 @@ class Lessc
   {
     if ($this->literal(';'))
       return true;
-    elseif ($this->count == strlen($this->buffer) || $this->buffer {$this->count}
-    == '}') {
+    elseif ($this->count == strlen($this->buffer) || substr($this->buffer, $this->count, 1) == '}') {
     // if there is end of file or a closing block next then we don't need a ;
     return true;
   }
@@ -2315,8 +2313,7 @@ class Lessc
 
     // shortcut on single letter
     if (!$eatWhitespace && strlen($what) == 1) {
-      if ($this->buffer {$this->count}
-      == $what) {
+      if (substr($this->buffer, $this->count, 1) == $what) {
         $this->count++;
         return true;
       }
