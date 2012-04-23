@@ -158,7 +158,8 @@ class IceStatic
     return implode('-', array(
       $_SERVER['HTTP_HOST'],
       $_SERVER['SF_APP'], $_SERVER['SF_ENV'],
-      $_SERVER['REMOTE_ADDR'], $_SERVER['HTTP_USER_AGENT']
+      self::getUserIpAddress(),
+      isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : ''
     ));
   }
 
