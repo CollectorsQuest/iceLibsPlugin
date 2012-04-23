@@ -631,4 +631,100 @@ class Utf8
     include_once($file);
     return true;
   }
+
+  /**
+   * Get a summary of the imput string of a specific lenght.
+   * Truncate
+   * This function will not cutoff words and will allow for html tags.
+   * Default html tags: <strong> <b> <italic> <em> <i>
+   *
+   * @param      string $input
+   * @param      integer $length
+   * @param      string $allowed_tags
+   * @param      string $truncate_string
+   *
+   * @return     string
+   */
+  public static function truncateHtmlKeepWordsWhole(
+    $input,
+    $length = 800,
+    $allowed_tags = null,
+    $truncate_string = '...'
+  ) {
+    if (null === $allowed_tags)
+    {
+      $allowed_tags = '<strong> <b> <italic> <em> <i> ';
+    }
+
+    if ( !($input = strip_tags($input, $allowed_tags)) )
+    {
+      return '';
+    }
+
+    $input = trim($input, ' &nbsp;');
+
+    if (mb_strlen($input,'UTF-8') > $length)
+    {
+      $words = explode(' ',$input);
+      $result = $words[0];
+      $i = 1;
+      do
+      {
+        $result .= ' ' . $words[$i++];
+      }
+      while (mb_strlen($result,'UTF-8') < $length);
+      $result = '<br' == substr(trim($result), -3) ? $result.' />' : $result;
+
+      return self::closeDanglingTags($result) . $truncate_string;
+    }
+    else
+    {
+      return $input;
+    }
+  }
+
+
+  /**
+   * Makes sure there are no dangling tags left in an HTML string
+   *
+   * @param      string $html
+   * @return     string
+   */
+  public static function closeDanglingTags($html)
+  {
+    $self_close_tags = array('br', 'img');
+
+    //put all opened tags into an array
+    preg_match_all("#<([a-z]+)( .*)?(?!/)>#iU", $html, $result);
+    $openedtags = $result[1];
+
+    //put all closed tags into an array
+    preg_match_all("#</([a-z]+)>#iU", $html, $result);
+    $closedtags = $result[1];
+    $len_opened = count($openedtags);
+
+    //all tags are closed
+    if (count($closedtags) == $len_opened)
+    {
+      return $html;
+    }
+
+    $openedtags = array_reverse($openedtags);
+    // close tags
+    for ($i=0; $i < $len_opened; $i++)
+    {
+      if ( !in_array($openedtags[$i], $closedtags)
+        && !in_array($openedtags[$i], $self_close_tags) )
+      {
+        $html .= '</'.$openedtags[$i].'>';
+      }
+      else
+      {
+        unset($closedtags[array_search($openedtags[$i], $closedtags)]);
+      }
+    }
+
+    return $html;
+  }
+
 }
