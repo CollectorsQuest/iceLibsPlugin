@@ -656,23 +656,24 @@ class Utf8
       $allowed_tags = '<strong> <b> <italic> <em> <i> ';
     }
 
+    $input = trim($input, ' ');
+    $input = str_replace(array("\r\n", "\n", "\r"), ' ', $input);
+
     if ( !($input = strip_tags($input, $allowed_tags)) )
     {
       return '';
     }
 
-    $input = trim($input, ' ');
-
     if (mb_strlen($input, 'UTF-8') > $length)
     {
-      $words = explode(' ',$input);
+      $words = explode(' ', $input);
       $result = $words[0];
       $i = 1;
       do
       {
         $result .= ' ' . $words[$i++];
       }
-      while (mb_strlen($result,'UTF-8') < $length);
+      while (mb_strlen($result, 'UTF-8') < $length);
       $result = '<br' == substr(trim($result), -3) ? $result.' />' : $result;
 
       return self::closeDanglingTags($result) . $truncate_string;
