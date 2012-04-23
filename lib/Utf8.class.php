@@ -661,9 +661,9 @@ class Utf8
       return '';
     }
 
-    $input = trim($input, ' &nbsp;');
+    $input = trim($input, ' ');
 
-    if (mb_strlen($input,'UTF-8') > $length)
+    if (mb_strlen($input, 'UTF-8') > $length)
     {
       $words = explode(' ',$input);
       $result = $words[0];
