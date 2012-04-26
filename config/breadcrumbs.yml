@@ -1,0 +1,19 @@
+# http://www.symfony-project.org/plugins/sfOrmBreadcrumbsPlugin/1_0_5?tab=plugin_readme
+
+ice_propel_breadcrumbs:
+  _root: { name: 'Home' }
+  _separator: ' → '
+  _lost: ''
+  _default_case: 'ucwords'
+
+#  main:
+#    index: [{ name: Home, route: homepage }]
+#
+#  blog:
+#    index: [{ name: 'Blog', route: blog }]
+#    showPost:
+#      - { name: Blog, route: blog }
+#      - { name: %title%, route: post_show, model: true }
+#    permalink:
+#      - { name: 'Archive', case: ucwords }
+#      - { name: %Post%, route: post_show, model: true, subobject: Post }
