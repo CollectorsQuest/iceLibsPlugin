@@ -6,7 +6,7 @@ class IceGateKeeper
   {
     $feature = strtolower(sfInflector::underscore(str_replace(' ', '', $feature)));
 
-    return sfConfig::get('gatekeeper_features_'. $feature, true);
+    return sfConfig::get('ice_gatekeeper_features_'. $feature, true);
   }
 
   public static function locked($feature)

@@ -5,4 +5,4 @@ config/routing.yml:
 config/gatekeeper.yml:
   class: sfDefineEnvironmentConfigHandler
   param:
-    prefix: gatekeeper_
+    prefix: ice_gatekeeper_
