@@ -35,7 +35,7 @@ abstract class IceActions extends sfActions
 
   protected function addBreadcrumb($name, $url = null, $title = null, $is_last = false)
   {
-    IceBreadcrumbs::getInstance()->addItem($name, $url, $title, $is_last);
+    IceBreadcrumbs::getInstance($this->getContext())->addItem($name, $url, $title, $is_last);
   }
 
   public function prependTitle($title, $readonly = false)
