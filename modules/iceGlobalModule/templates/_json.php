@@ -5,11 +5,11 @@
 </head>
 <body>
   json:<br/>
-  <?php echo print_r(json_encode($sf_data->getRaw('data'))); ?>
+  <?php echo json_encode($sf_data->getRaw('data')); ?>
   <br/>
   data structure:<br/>
   <pre>
-  <?php d($sf_data->getRaw('data')); ?>
+  <?php print_r($sf_data->getRaw('data')); ?>
   </pre>
 </body>
 </html>
