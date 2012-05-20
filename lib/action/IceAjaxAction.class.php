@@ -27,7 +27,7 @@ abstract class IceAjaxAction extends sfAction
     if ($section == 'partial')
     {
       return $this->renderPartial($this->getModuleName() .'/'. $page, array('object' => $object));
-    } 
+    }
     else if ($section == 'component')
     {
       return $this->renderComponent($this->getModuleName(), $page, array('object' => $object));
@@ -79,7 +79,7 @@ abstract class IceAjaxAction extends sfAction
       $this->getRequest()->setRequestFormat('html');
 
       $this->getContext()->getConfiguration()->loadHelpers('Partial');
-      $json = get_partial('ajax/json', array('data' => $data));
+      $json = get_partial('iceGlobalModule/json', array('data' => $data));
     }
     else
     {
