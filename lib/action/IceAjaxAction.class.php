@@ -51,6 +51,8 @@ abstract class IceAjaxAction extends sfAction
     {
       $this->output($json);
     }
+
+    return sfView::NONE;
   }
 
   protected function error($title, $message, $fastcgi_finish_request = false)
@@ -68,6 +70,8 @@ abstract class IceAjaxAction extends sfAction
     {
       $this->output($json);
     }
+
+    return sfView::NONE;
   }
 
   protected function json($data)
@@ -102,6 +106,7 @@ abstract class IceAjaxAction extends sfAction
     }
 
     $this->renderText($text);
+
     return sfView::NONE;
   }
 

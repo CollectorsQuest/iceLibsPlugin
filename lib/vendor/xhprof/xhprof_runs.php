@@ -352,11 +352,13 @@ class XHProfRuns_Default implements iXHProfRuns
     $sql['cookie'] = mysql_real_escape_string(serialize($_COOKIE), $this->linkID);
 
     //This code has not been tested
-    if ($_xhprof['savepost']) {
+    if (isset($_xhprof['savepost']) && $_xhprof['savepost']) {
       $sql['post'] = mysql_real_escape_string(serialize($_POST), $this->linkID);
-    } else
-    {
-      $sql['post'] = mysql_real_escape_string(serialize(array("Skipped" => "Post data omitted by rule")), $this->linkID);
+    }
+    else {
+      $sql['post'] = mysql_real_escape_string(
+        serialize(array("Skipped" => "Post data omitted by rule")), $this->linkID
+      );
     }
 
 
@@ -365,8 +367,8 @@ class XHProfRuns_Default implements iXHProfRuns
     $sql['cpu'] = isset($xhprof_data['main()']['cpu']) ? $xhprof_data['main()']['cpu'] : '';
 
 
-    // The value of 2 seems to be light enugh that we're not killing the server, but still gives us lots of breathing room on
-    // full production code.
+    // The value of 2 seems to be light enugh that we're not killing the server,
+    // but still gives us lots of breathing room on full production code.
     $sql['data'] = mysql_real_escape_string(serialize($xhprof_data));
 
     $url = isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : $_SERVER['PHP_SELF'];
@@ -377,7 +379,7 @@ class XHProfRuns_Default implements iXHProfRuns
     $sql['servername'] = mysql_real_escape_string($sname);
     $sql['type'] = (int)(isset($xhprof_details['type']) ? $xhprof_details['type'] : 0);
     $sql['timestamp'] = mysql_real_escape_string($_SERVER['REQUEST_TIME']);
-    $sql['server_id'] = mysql_real_escape_string($_xhprof['servername']);
+    $sql['server_id'] = isset($_xhprof['servername']) ? mysql_real_escape_string($_xhprof['servername']) : null;
     $sql['aggregateCalls_include'] = getenv('xhprof_aggregateCalls_include') ? getenv('xhprof_aggregateCalls_include')
         : '';
 
