@@ -52,11 +52,12 @@ class BaseiceGlobalModuleActions extends sfActions
       $captcha->setCodeLength($request->getParameter('cl'));
     }
 
+    // Send the Response with the Headers
+    $this->getResponse()->sendHttpHeaders();
+
     // Generate the actual image and send to the browser
     $captcha->generateImage();
 
-    // Send the Response with the Headers
-    $this->getResponse()->send();
 
     /**
      * @see http://php-fpm.org/wiki/Features#fastcgi_finish_request.28.29
