@@ -671,9 +671,13 @@ class Utf8
       $i = 1;
       do
       {
-        $result .= ' ' . $words[$i++];
-      }
-      while (mb_strlen($result, 'UTF-8') < $length);
+        $i++;
+        if (isset($words[$i]))
+        {
+          $result .= ' ' . $words[$i];
+        }
+      } while (mb_strlen($result, 'UTF-8') < $length && $i <= count($words));
+
       $result = '<br' == substr(trim($result), -3) ? $result.' />' : $result;
 
       return self::closeDanglingTags($result) . $truncate_string;
