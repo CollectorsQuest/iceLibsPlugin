@@ -367,7 +367,7 @@ class Utf8
       $string = iconv('UTF-8', 'us-ascii//TRANSLIT', $string);
 
       // Remove all characters that are not the separator, a-z, 0-9, dot, or whitespace
-      $string = preg_replace('/[^'.preg_quote($separator).'\w\d\s\/\_:=]+/ui', '', $string);
+      $string = preg_replace('/[^'.preg_quote($separator).'\w\d\s\/\_:=&]+/ui', '', $string);
     }
     else
     {
@@ -378,8 +378,11 @@ class Utf8
       }
 
       // Remove all characters that are not the separator, letters, numbers, or whitespace
-      $string = preg_replace('/[^'.preg_quote($separator).'a-zA-Zа-яА-Я\d\s\/\_:=]+/iu', '', $string);
+      $string = preg_replace('/[^'.preg_quote($separator).'a-zA-Zа-яА-Я\d\s\/\_:=&]+/iu', '', $string);
     }
+
+    //Replace & with 'and'
+    $string = preg_replace('/&/', 'and', $string);
 
     // Replace all separator characters, "/", ":", "=" and whitespace by a single separator
     $string = preg_replace('/['.preg_quote($separator).'\s\/:=]+/iu', $separator, $string);

@@ -3,7 +3,7 @@
 require_once dirname(__FILE__).'/../../../../test/bootstrap/unit.php';
 require_once dirname(__FILE__).'/../../lib/Utf8.class.php';
 
-$t = new lime_test(64, new lime_output_color());
+$t = new lime_test(65, new lime_output_color());
 
 $t->diag('::cyrillic2latin()');
 
@@ -153,6 +153,9 @@ $t->diag('::slugify()');
 
   $slug = Utf8::slugify('????', '-', true, true, 'default');
   $t->is($slug, 'default', 'Checking the default parameter');
+
+  $slug = Utf8::slugify('History & Militaria', '-', true);
+  $t->is($slug, 'history-and-militaria', 'Slugify should convert "&" to "and"');
 
 $t->diag('::excerpt()');
 
