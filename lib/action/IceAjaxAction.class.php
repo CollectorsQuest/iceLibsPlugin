@@ -57,6 +57,8 @@ abstract class IceAjaxAction extends sfAction
 
   protected function error($title, $message, $fastcgi_finish_request = false)
   {
+    $this->getResponse()->setStatusCode(500);
+
     $json = $this->json(array(
       'Error' => array('Title' => $title, 'Message' => $message)
     ));
