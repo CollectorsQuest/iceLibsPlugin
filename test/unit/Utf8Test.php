@@ -154,9 +154,6 @@ $t->diag('::slugify()');
   $slug = Utf8::slugify('????', '-', true, true, 'default');
   $t->is($slug, 'default', 'Checking the default parameter');
 
-  $slug = Utf8::slugify('History & Militaria', '-', true, true);
-  $t->is($slug, 'history-and-militaria', 'Ampersand should become "and"');
-
 $t->diag('::excerpt()');
 
   $texts = array(
