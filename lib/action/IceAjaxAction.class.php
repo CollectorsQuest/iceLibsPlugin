@@ -90,7 +90,7 @@ abstract class IceAjaxAction extends sfAction
     else
     {
       $this->getRequest()->setRequestFormat('json');
-      $this->getResponse()->setHttpHeader('Content-type', 'application/json');
+      $this->getResponse()->setHttpHeader('Content-Type', 'application/json; charset=utf-8');
       if (strlen($json) < 4028)
       {
         $this->getResponse()->setHttpHeader('X-JSON', $json);
