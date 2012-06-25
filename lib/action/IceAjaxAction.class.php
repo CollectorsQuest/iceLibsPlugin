@@ -2,7 +2,7 @@
 
 abstract class IceAjaxAction extends sfAction
 {
-  abstract protected function getObject(sfWebRequest $request);
+  abstract protected function getObject(sfRequest $request);
 
   public function execute($request)
   {
