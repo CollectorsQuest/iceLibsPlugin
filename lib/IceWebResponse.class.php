@@ -16,15 +16,47 @@ class IceWebResponse extends sfWebResponse
    */
   public function send()
   {
+    // Send the headers no matter what
     $this->sendHttpHeaders();
-    $this->sendContent();
 
     /**
      * @see http://php-fpm.org/wiki/Features#fastcgi_finish_request.28.29
      */
     if (function_exists('fastcgi_finish_request'))
     {
+      $this->sendContent();
+
       fastcgi_finish_request();
+    }
+
+    /**
+     * @see http://www.php.net/manual/en/features.connection-handling.php
+     */
+    else if (!$this->headerOnly)
+    {
+      set_time_limit(30);
+      ignore_user_abort(true);
+
+      ob_end_clean();
+
+      header("Connection: close\r\n");
+      header("Content-Encoding: none\r\n");
+
+      ob_start();
+      $this->sendContent();
+      $size = ob_get_length();
+      header("Content-Length: $size");
+
+      ob_end_flush();
+      flush();
+    }
+
+    if (
+      ($sf_context = sfContext::getInstance()) &&
+      sfContext::getInstance()->has('user')
+    ) {
+      $sf_context->getUser()->shutdown();
+      $sf_context->getStorage()->shutdown();
     }
 
     if ($functions = $this->getDelayedFunctions())
