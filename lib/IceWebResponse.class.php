@@ -22,7 +22,10 @@ class IceWebResponse extends sfWebResponse
     /**
      * @see http://php-fpm.org/wiki/Features#fastcgi_finish_request.28.29
      */
-    fastcgi_finish_request();
+    if (function_exists('fastcgi_finish_request'))
+    {
+      fastcgi_finish_request();
+    }
 
     if ($functions = $this->getDelayedFunctions())
     foreach ($functions as $function)
@@ -83,7 +86,7 @@ class IceWebResponse extends sfWebResponse
     }
   }
 
-  public function addDelayedFunction($name, $params)
+  public function addDelayedFunction($name, $params = array())
   {
     // In development we do not want to delay the execution
     if (sfConfig::get('sf_environment') == 'prod')
