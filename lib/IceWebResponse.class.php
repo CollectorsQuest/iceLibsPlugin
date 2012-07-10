@@ -62,13 +62,13 @@ class IceWebResponse extends sfWebResponse
     if ($functions = $this->getDelayedFunctions())
     foreach ($functions as $function)
     {
-      if (is_array($function['name']) && in_array($function['name'][1], array('setNumberOf', 'setNumViews')))
+      if (is_array($function['callback']) && in_array($function['callback'][1], array('setNumberOf', 'setNumViews')))
       {
-        if (is_object($function['name'][0]) && method_exists($function['name'][0], 'getId'))
+        if (is_object($function['callback'][0]) && method_exists($function['callback'][0], 'getId'))
         {
           $memcache = IceStatic::getMemcacheCache();
 
-          $key = $this->_context .'-'. get_class($function['name'][0]) .'-'. $function['name'][0]->getId() .'-'. $function['name'][1] .'-'. $function['params'][0];
+          $key = $this->_context .'-'. get_class($function['callback'][0]) .'-'. $function['callback'][0]->getId() .'-'. $function['callback'][1] .'-'. $function['params'][0];
           $operator = $param = $number = null;
 
           if (count($function['params']) == 2 && in_array(substr($function['params'][1], 0, 1), array('+', '-')))
@@ -107,31 +107,31 @@ class IceWebResponse extends sfWebResponse
 
       try
       {
-        call_user_func_array($function['name'], $function['params']);
+        call_user_func_array($function['callback'], $function['params']);
 
-        if (($function['name'][0] instanceof BaseObject) && method_exists($function['name'][0], 'save'))
+        if (is_array($function['callback']) && ($function['callback'][0] instanceof BaseObject) && method_exists($function['callback'][0], 'save'))
         {
-          if ($function['name'][0]->isModified()) { $function['name'][0]->save(); }
+          if ($function['callback'][0]->isModified()) { $function['callback'][0]->save(); }
         }
       }
       catch (Exception $e) { ; }
     }
   }
 
-  public function addDelayedFunction($name, $params = array())
+  public function addDelayedcallback($callback, $params = array())
   {
     // In development we do not want to delay the execution
     if (sfConfig::get('sf_environment') == 'prod')
     {
-      $this->_delayed_functions[] = array('name' => $name, 'params' => $params);
+      $this->_delayed_callbacks[] = array('callback' => $callback, 'params' => $params);
     }
     else
     {
-      call_user_func_array($name, $params);
+      call_user_func_array($callback, $params);
 
-      if (($name[0] instanceof BaseObject) && $name[1] != 'save' && method_exists($name[0], 'save'))
+      if (is_array($callback) && ($callback[0] instanceof BaseObject) && $callback[1] != 'save' && method_exists($callback[0], 'save'))
       {
-        if ($name[0]->isModified()) { $name[0]->save(); }
+        if ($callback[0]->isModified()) { $callback[0]->save(); }
       }
     }
   }
