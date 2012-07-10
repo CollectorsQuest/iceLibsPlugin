@@ -118,7 +118,7 @@ class IceWebResponse extends sfWebResponse
     }
   }
 
-  public function addDelayedcallback($callback, $params = array())
+  public function addDelayedFunction($callback, $params = array())
   {
     // In development we do not want to delay the execution
     if (sfConfig::get('sf_environment') == 'prod')
