@@ -11,6 +11,51 @@ class IceWebResponse extends sfWebResponse
 
   private $_delayed_functions = array();
 
+
+  public function sendContent()
+  {
+    if (!$this->headerOnly)
+    {
+      /**
+       * @see http://php-fpm.org/wiki/Features#fastcgi_finish_request.28.29
+       */
+      if (function_exists('fastcgi_finish_request'))
+      {
+        parent::sendContent();
+
+        fastcgi_finish_request();
+      }
+
+      // allow to work in test env
+      elseif (!$this->options['send_http_headers'])
+      {
+        parent::sendContent();
+      }
+
+      /**
+       * @see http://www.php.net/manual/en/features.connection-handling.php
+       */
+      else
+      {
+        set_time_limit(30);
+        ignore_user_abort(true);
+
+        ob_end_clean();
+
+        header("Connection: close\r\n");
+        header("Content-Encoding: none\r\n");
+
+        ob_start();
+        parent::sendContent();
+        $size = ob_get_length();
+        header("Content-Length: $size");
+
+        ob_end_flush();
+        flush();
+      }
+    }
+  }
+
   /**
    * Sends the HTTP headers and the content.
    */
@@ -18,38 +63,7 @@ class IceWebResponse extends sfWebResponse
   {
     // Send the headers no matter what
     $this->sendHttpHeaders();
-
-    /**
-     * @see http://php-fpm.org/wiki/Features#fastcgi_finish_request.28.29
-     */
-    if (function_exists('fastcgi_finish_request'))
-    {
-      $this->sendContent();
-
-      fastcgi_finish_request();
-    }
-
-    /**
-     * @see http://www.php.net/manual/en/features.connection-handling.php
-     */
-    else if (!$this->headerOnly)
-    {
-      set_time_limit(30);
-      ignore_user_abort(true);
-
-      ob_end_clean();
-
-      header("Connection: close\r\n");
-      header("Content-Encoding: none\r\n");
-
-      ob_start();
-      $this->sendContent();
-      $size = ob_get_length();
-      header("Content-Length: $size");
-
-      ob_end_flush();
-      flush();
-    }
+    $this->sendContent();
 
     if (
       ($sf_context = sfContext::getInstance()) &&
@@ -78,7 +92,7 @@ class IceWebResponse extends sfWebResponse
             $number = (int) substr($function['params'][1], 1);
             $param  = &$function['params'][1];
           }
-          else if (count($function['params']) == 1 && in_array(substr($function['params'][0], 0, 1), array('+', '-')))
+          elseif (count($function['params']) == 1 && in_array(substr($function['params'][0], 0, 1), array('+', '-')))
           {
             $operator = '+';
 
@@ -111,11 +125,15 @@ class IceWebResponse extends sfWebResponse
 
         if (is_array($function['callback']) && ($function['callback'][0] instanceof BaseObject) && method_exists($function['callback'][0], 'save'))
         {
-          if ($function['callback'][0]->isModified()) { $function['callback'][0]->save(); }
+          if ($function['callback'][0]->isModified())
+          {
+            $function['callback'][0]->save();
+          }
         }
       }
       catch (Exception $e) { ; }
     }
+
   }
 
   public function addDelayedFunction($callback, $params = array())
