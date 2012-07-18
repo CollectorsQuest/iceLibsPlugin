@@ -220,3 +220,14 @@ $t->diag('http_build_url()');
   $url = 'http://www.google.com/search?q=help';
   $parts = array('query' => 'hl=bg');
   $t->is(IceFunctions::http_build_url($url, $parts, HTTP_URL_REPLACE), 'http://www.google.com/search?hl=bg');
+
+$t->diag('title_case()');
+
+  $string = IceFunctions::title_case('Sign in to CollectorsQuest.com');
+  $t->is($string, 'Sign in to Collectorsquest.com');
+
+  $string = IceFunctions::title_case('Sign In To Collectors Quest');
+  $t->is($string, 'Sign in to Collectors Quest');
+
+  $string = IceFunctions::title_case('Return information about characters used in a string');
+  $t->is($string, 'Return Information About Characters Used in a String');
