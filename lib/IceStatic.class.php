@@ -156,10 +156,10 @@ class IceStatic
   static public function getUserUniqueString()
   {
     return implode('-', array(
-      $_SERVER['HTTP_HOST'],
+      isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : 'unknown-host',
       $_SERVER['SF_APP'], $_SERVER['SF_ENV'],
       self::getUserIpAddress(),
-      isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : ''
+      isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : 'unknown-agent'
     ));
   }
 
