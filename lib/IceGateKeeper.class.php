@@ -2,15 +2,15 @@
 
 class IceGateKeeper
 {
-  public static function open($feature)
+  public static function open($name, $type = 'feature')
   {
-    $feature = strtolower(sfInflector::underscore(str_replace(' ', '', $feature)));
+    $name = strtolower(sfInflector::underscore(str_replace(' ', '', $name)));
 
-    return sfConfig::get('ice_gatekeeper_features_'. $feature, true);
+    return sfConfig::get('ice_gatekeeper_'. rtrim($type, 's') .'s_'. $name, true);
   }
 
-  public static function locked($feature)
+  public static function locked($name, $type = 'feature')
   {
-    return !self::open($feature);
+    return !self::open($name, $type);
   }
 }
