@@ -27,9 +27,13 @@ def lessc(input, output, web)
   print "[" + Time.now.strftime("%I:%M:%S") + "] compiling #{input.inspect.sub(web, '')}... "
   system "lessc #{input} #{output}"
 
-  # Minify and Gzip if possible
+  # Minify if possible
   system "lessc --yui-compress #{input} #{output.gsub('.css', '.min.css')}"
-  system "test -f #{output.gsub('.css', '.min.css')} && cat #{output.gsub('.css', '.min.css')} | gzip -9 -c > #{output}.gz"
+
+  # Gzip if possible
+  if File.exists?(output.gsub('.css', '.min.css'))
+    system "cat #{output.gsub('.css', '.min.css')} | gzip -9 -c > #{output}.gz"
+  end
 
   puts 'done'
 end
@@ -38,9 +42,13 @@ def plessc(input, output, web)
   print "[" + Time.now.strftime("%I:%M:%S") + "] compiling #{input.inspect.sub(web, '')}... "
   system "php #{File.dirname(__FILE__)}/../data/bin/plessc -f=lessjs #{input} #{output}"
 
-  # Minify and Gzip if possible
+  # Minify if possible
   system "php #{File.dirname(__FILE__)}/../data/bin/plessc -f=compressed #{input} #{output.gsub('.css', '.min.css')}"
-  system "test -f #{output.gsub('.css', '.min.css')} && cat #{output} | gzip -9 -c > #{output}.gz"
+
+  # Gzip if possible
+  if File.exists?(output.gsub('.css', '.min.css'))
+    system "cat #{output.gsub('.css', '.min.css')} | gzip -9 -c > #{output}.gz"
+  end
 
   puts 'done'
 end
