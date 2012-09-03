@@ -196,6 +196,17 @@ class IceFunctions
     return $result;
   }
 
+  public static function array_to_csv($data, $delimeter = ',', $enclosure = '"')
+  {
+    $stream = fopen('php://temp', 'r+');
+    fputcsv($stream, $data, $delimeter, $enclosure);
+    rewind($stream);
+    $csv = fgets($stream);
+    fclose($stream);
+
+    return $csv;
+  }
+
   /**
    * @static
    *
@@ -618,4 +629,5 @@ class IceFunctions
 
     return $newtitle;
   }
+
 }
