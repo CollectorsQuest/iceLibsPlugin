@@ -7,89 +7,11 @@ require dirname(__FILE__) .'/vendor/Facebook.class.php';
 
 class IceSecurityUser extends sfBasicSecurityUser
 {
-  const CAN_READ    = 'read',
-        CAN_CREATE  = 'create',
-        CAN_EDIT    = 'edit',
-        CAN_COMMENT = 'comment',
-        CAN_TRANSLATE = 'translate';
-
-  protected static
-    $_credentials = array(
-      self::CAN_READ,
-      self::CAN_CREATE,
-      self::CAN_EDIT,
-      self::CAN_COMMENT,
-      self::CAN_TRANSLATE
-    ),
-    $_facebook_data = null,
-    $_spam_control  = array();
+  protected static $_facebook_data = null;
 
   public function __construct(sfEventDispatcher $dispatcher, sfStorage $storage, $options = array())
   {
     parent::__construct($dispatcher, $storage, $options);
-
-    $memcache = IceStatic::getMemcacheClient();
-
-    if (session_id())
-    {
-      $key = 'ice_spam_control_'. session_id();
-      if (false === self::$_spam_control = $memcache->get($key, false))
-      {
-        if ($record = iceModelSpamControlQuery::create()->findOneBySessionId(session_id()))
-        {
-          self::$_spam_control = $record->toArray();
-        }
-        else
-        {
-          self::$_spam_control = array();
-        }
-
-        $memcache->set($key, self::$_spam_control, false, 3600);
-      }
-    }
-
-    if (empty(self::$_spam_control) && $this->getIpAddress())
-    {
-      $key = 'ice_spam_control_'. $this->getIpAddress();
-      if (false === self::$_spam_control = $memcache->get($key, false))
-      {
-        if ($record = iceModelSpamControlQuery::create()->findOneByIpAddress($this->getIpAddress()))
-        {
-          self::$_spam_control = $record->toArray();
-        }
-        else
-        {
-          self::$_spam_control = array();
-        }
-
-        $memcache->set($key, self::$_spam_control, false, 3600);
-      }
-    }
-
-    if (isset(self::$_spam_control['Credentials']))
-    {
-      $credentials = explode(',', self::$_spam_control['Credentials']);
-      foreach ($credentials as $credential)
-      {
-        $this->addCredential($credential);
-      }
-    }
-    else
-    {
-      foreach (self::$_credentials as $credential)
-      {
-        $this->addCredential($credential);
-      }
-    }
-
-    if (isset(self::$_spam_control['IsBanned']) && self::$_spam_control['IsBanned'] == true)
-    {
-      $this->removeCredential(self::CAN_READ);
-      $this->removeCredential(self::CAN_CREATE);
-      $this->removeCredential(self::CAN_EDIT);
-      $this->removeCredential(self::CAN_COMMENT);
-      $this->removeCredential(self::CAN_TRANSLATE);
-    }
 
     self::$_facebook_data = $this->getAttribute('data', null, 'icepique/user/facebook');
   }
@@ -123,7 +45,7 @@ class IceSecurityUser extends sfBasicSecurityUser
 
   public function getFacebookUser()
   {
-    if ($facebook = $this->getFacebook())
+    if (( $facebook = $this->getFacebook() ))
     {
       return $facebook->getUser();
     }
@@ -258,4 +180,5 @@ class IceSecurityUser extends sfBasicSecurityUser
   {
     $this->getAttributeHolder()->removeNamespace('icepique/user/facebook');
   }
+
 }
