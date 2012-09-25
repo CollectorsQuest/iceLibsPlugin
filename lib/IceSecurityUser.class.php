@@ -211,6 +211,12 @@ class IceSecurityUser extends sfBasicSecurityUser
       return;
     }
 
+    if (is_string($persist))
+    {
+      $persist = true;
+      $namespace = $persist;
+    }
+
     if (null == $namespace)
     {
       $namespace = 'symfony/user/sfUser';
