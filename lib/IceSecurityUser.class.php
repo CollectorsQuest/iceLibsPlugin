@@ -109,6 +109,8 @@ class IceSecurityUser extends sfBasicSecurityUser
         if (!$this->attributeHolder->getNames($namespace.'/flash'))
         {
           $this->attributeHolder->remove($namespace, null, self::EXTRA_FLASH_NAMESPACE.'/namespaces');
+          $this->attributeHolder->removeNamespace($namespace.'/flash');
+          $this->attributeHolder->removeNamespace($namespace.'/flash/remove');
         }
       }
     }
