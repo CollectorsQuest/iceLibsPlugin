@@ -213,8 +213,8 @@ class IceSecurityUser extends sfBasicSecurityUser
 
     if (is_string($persist))
     {
-      $persist = true;
       $namespace = $persist;
+      $persist = true;
     }
 
     if (null == $namespace)
