@@ -7,6 +7,8 @@ require dirname(__FILE__) .'/vendor/Facebook.class.php';
 
 class IceSecurityUser extends sfBasicSecurityUser
 {
+  const EXTRA_FLASH_NAMESPACE = 'symfony/user/sfUser/extra-flash';
+
   protected static $_facebook_data = null;
 
   public function __construct(sfEventDispatcher $dispatcher, sfStorage $storage, $options = array())
@@ -14,6 +16,99 @@ class IceSecurityUser extends sfBasicSecurityUser
     parent::__construct($dispatcher, $storage, $options);
 
     self::$_facebook_data = $this->getAttribute('data', null, 'icepique/user/facebook');
+  }
+
+
+  /**
+   * Initializes this sfUser.
+   *
+   * Overridden for handling of custom flash namespaces
+   *
+   * @see sfUser::initialize()
+   */
+  public function initialize(sfEventDispatcher $dispatcher, sfStorage $storage, $options = array())
+
+  {
+    parent::initialize($dispatcher, $storage, $options);
+
+    // flag namespaced flash to be removed at shutdown
+    if ($this->options['use_flash'] && $namespaces = $this->attributeHolder->getNames(self::EXTRA_FLASH_NAMESPACE.'/namespaces'))
+    {
+      foreach ($namespaces as $namespace)
+      {
+        if ($names = $this->attributeHolder->getNames($namespace.'/flash'))
+        {
+          if ($this->options['logging'])
+          {
+            $this->dispatcher->notify(new sfEvent($this, 'application.log', array(
+                sprintf('Flag old flash messages for namespace %s ("%s")',
+                        $namespace,
+                        implode('", "', $names)),
+            )));
+          }
+
+          foreach ($names as $name)
+          {
+            $this->attributeHolder->set(
+              $name,
+              true,
+              $namespace.'/flash/remove'
+            );
+          }
+        }
+      }
+    }
+  }
+
+  /**
+   * Executes the shutdown procedure.
+   *
+   * Overridden for handling of custom flash namespaces
+   *
+   * @see sfUser::shutdown
+   */
+  public function shutdown()
+  {
+    // remove namespaced flash that are tagged to be removed
+    if ($this->options['use_flash'] && $namespaces = $this->attributeHolder->getNames(self::EXTRA_FLASH_NAMESPACE.'/namespaces'))
+    {
+      foreach ($namespaces as $namespace)
+      {
+        if ($names = $this->attributeHolder->getNames($namespace.'/flash/remove'))
+        {
+          if ($this->options['logging'])
+          {
+            $this->dispatcher->notify(new sfEvent($this, 'application.log', array(
+                sprintf('Remove old flash messages for namespace %s ("%s")',
+                        $extra_flash_namespace,
+                        implode('", "', $names)),
+            )));
+          }
+
+          foreach ($names as $name)
+          {
+            $this->attributeHolder->remove(
+              $name,
+              null,
+              $namespace.'/flash'
+            );
+            $this->attributeHolder->remove(
+              $name,
+              null,
+              $namespace.'/flash/remove'
+            );
+          }
+        }
+
+        // if there are no flashes in the namespace, remove it
+        if (!$this->attributeHolder->getNames($namespace.'/flash'))
+        {
+          $this->attributeHolder->remove($namespace, null, self::EXTRA_FLASH_NAMESPACE.'/namespaces');
+        }
+      }
+    }
+
+    parent::shutdown();
   }
 
   public function getFacebook($credentials = array())
@@ -104,11 +199,22 @@ class IceSecurityUser extends sfBasicSecurityUser
    * @param  bool    $persist    true if the flash have to persist for the following request (true by default)
    * @param  string  $namespace
    */
-  public function setFlash($name, $value, $persist = true, $namespace = 'symfony/user/sfUser')
+  public function setFlash($name, $value, $persist = true, $namespace = null)
   {
     if (!$this->options['use_flash'])
     {
       return;
+    }
+
+    if (null == $namespace)
+    {
+      $namespace = 'symfony/user/sfUser';
+    }
+    else
+    {
+      $namespace = 'symfony/user/extra-flash/'.$namespace;
+
+      $this->attributeHolder->set($namespace, true, self::EXTRA_FLASH_NAMESPACE.'/namespaces');
     }
 
     $this->setAttribute($name, $value, $namespace.'/flash');
@@ -134,11 +240,20 @@ class IceSecurityUser extends sfBasicSecurityUser
    *
    * @return mixed The value of the flash variable
    */
-  public function getFlash($name, $default = null, $delete = false, $namespace = 'symfony/user/sfUser')
+  public function getFlash($name, $default = null, $delete = false, $namespace = null)
   {
     if (!$this->options['use_flash'])
     {
       return $default;
+    }
+
+    if (null == $namespace)
+    {
+      $namespace = 'symfony/user/sfUser';
+    }
+    else
+    {
+      $namespace = 'symfony/user/extra-flash/'.$namespace;
     }
 
     $value = $this->getAttribute($name, $default, $namespace.'/flash');
@@ -161,11 +276,20 @@ class IceSecurityUser extends sfBasicSecurityUser
    *
    * @return bool true if the variable exists, false otherwise
    */
-  public function hasFlash($name, $namespace = 'symfony/user/sfUser')
+  public function hasFlash($name, $namespace = null)
   {
     if (!$this->options['use_flash'])
     {
       return false;
+    }
+
+    if (null == $namespace)
+    {
+      $namespace = 'symfony/user/sfUser';
+    }
+    else
+    {
+      $namespace = 'symfony/user/extra-flash/'.$namespace;
     }
 
     return $this->hasAttribute($name, $namespace.'/flash');
