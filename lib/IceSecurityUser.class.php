@@ -27,7 +27,6 @@ class IceSecurityUser extends sfBasicSecurityUser
    * @see sfUser::initialize()
    */
   public function initialize(sfEventDispatcher $dispatcher, sfStorage $storage, $options = array())
-
   {
     parent::initialize($dispatcher, $storage, $options);
 
@@ -86,7 +85,7 @@ class IceSecurityUser extends sfBasicSecurityUser
           {
             $this->dispatcher->notify(new sfEvent($this, 'application.log', array(
                 sprintf('Remove old flash messages for namespace %s ("%s")',
-                        $extra_flash_namespace,
+                        $namespace,
                         implode('", "', $names)),
             )));
           }
