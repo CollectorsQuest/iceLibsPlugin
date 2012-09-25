@@ -32,7 +32,10 @@ class IceSecurityUser extends sfBasicSecurityUser
     parent::initialize($dispatcher, $storage, $options);
 
     // flag namespaced flash to be removed at shutdown
-    if ($this->options['use_flash'] && $namespaces = $this->attributeHolder->getNames(self::EXTRA_FLASH_NAMESPACE.'/namespaces'))
+    $namespaces = $this->attributeHolder->getNames(
+      self::EXTRA_FLASH_NAMESPACE.'/namespaces'
+    );
+    if ($this->options['use_flash'] && $namespaces)
     {
       foreach ($namespaces as $namespace)
       {
@@ -70,7 +73,10 @@ class IceSecurityUser extends sfBasicSecurityUser
   public function shutdown()
   {
     // remove namespaced flash that are tagged to be removed
-    if ($this->options['use_flash'] && $namespaces = $this->attributeHolder->getNames(self::EXTRA_FLASH_NAMESPACE.'/namespaces'))
+    $namespaces = $this->attributeHolder->getNames(
+      self::EXTRA_FLASH_NAMESPACE.'/namespaces'
+    );
+    if ($this->options['use_flash'] && $namespaces)
     {
       foreach ($namespaces as $namespace)
       {
@@ -235,12 +241,11 @@ class IceSecurityUser extends sfBasicSecurityUser
    *
    * @param  string   $name       The name of the flash variable
    * @param  string   $default    The default value returned when named variable does not exist.
-   * @param  boolean  $delete     Whether to delete the flash after we get the value
    * @param  string   $namespace
    *
    * @return mixed The value of the flash variable
    */
-  public function getFlash($name, $default = null, $delete = false, $namespace = null)
+  public function getFlash($name, $default = null, $namespace = null)
   {
     if (!$this->options['use_flash'])
     {
@@ -257,13 +262,6 @@ class IceSecurityUser extends sfBasicSecurityUser
     }
 
     $value = $this->getAttribute($name, $default, $namespace.'/flash');
-
-    if ($delete == true)
-    {
-      // clear removal flag and value
-      $this->attributeHolder->remove($name, null, $namespace.'/flash/remove');
-      $this->attributeHolder->remove($name, null, $namespace.'/flash');
-    }
 
     return $value;
   }

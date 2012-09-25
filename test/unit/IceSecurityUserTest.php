@@ -3,7 +3,7 @@
 require_once dirname(__FILE__).'/../../../../test/bootstrap/unit.php';
 require_once dirname(__FILE__).'/../../lib/IceSecurityUser.class.php';
 
-$t = new lime_test(null, array(new lime_output_color()));
+$t = new lime_test(11, array(new lime_output_color()));
 $t->diag('Testing IceSecurityUser.class.php');
 
 $_SERVER['session_id'] = 'test';
@@ -26,31 +26,20 @@ user_flush($dispatcher, $user, $storage, $options);
 $t->is($user->hasFlash('persist_test', $ns = 'extra'), null);
 
 
-/* */
-$t->diag('02. Flash messages can be deleted on get');
-$user->setFlash('delete_test', 1);
-$user->setFlash('delete_test', 2, $persist = true, $ns = 'extra');
-$t->is($user->getFlash('delete_test', null, $delete = true), 1);
-$t->is($user->getFlash('delete_test', null, $delete = true, $ns = 'extra'), 2);
-// should return the default now
-$t->is($user->hasFlash('delete_test'), false);
-$t->is($user->hasFlash('delete_test', $ns = 'extra'), false);
-
-
-$t->diag('03. Namespaced flash messages are properly unset after one request');
+$t->diag('02. Namespaced flash messages are properly unset after one request');
 $user->setFlash('request_unset_test', 1);
 $user->setFlash('request_unset_test', 2, $persist = true, $ns = 'extra');
 
 user_flush($dispatcher, $user, $storage, $options);
 $t->is($user->getFlash('request_unset_test'), 1);
-$t->is($user->getFlash('request_unset_test', null, $delete = false, $ns = 'extra'), 2);
+$t->is($user->getFlash('request_unset_test', null, $ns = 'extra'), 2);
 
 user_flush($dispatcher, $user, $storage, $options);
 $t->is($user->hasFlash('request_unset_test'), false);
 $t->is($user->hasFlash('request_unset_test', $ns = 'extra'), false);
 
 
-$t->diag('04. Make sure symfony\'s flash implementation still works:');
+$t->diag('03. Make sure symfony\'s flash implementation still works:');
 // ->setFlash() ->getFlash() ->hasFlash()
 $t->diag('->setFlash() ->getFlash() ->hasFlash()');
 $user->initialize($dispatcher, $storage, array('use_flash' => true));
