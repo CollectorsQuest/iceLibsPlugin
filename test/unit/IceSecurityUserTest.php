@@ -3,7 +3,7 @@
 require_once dirname(__FILE__).'/../../../../test/bootstrap/unit.php';
 require_once dirname(__FILE__).'/../../lib/IceSecurityUser.class.php';
 
-$t = new lime_test(11, array(new lime_output_color()));
+$t = new lime_test(15, array(new lime_output_color()));
 $t->diag('Testing IceSecurityUser.class.php');
 
 $_SERVER['session_id'] = 'test';
@@ -39,7 +39,16 @@ $t->is($user->hasFlash('request_unset_test'), false);
 $t->is($user->hasFlash('request_unset_test', $ns = 'extra'), false);
 
 
-$t->diag('03. Make sure symfony\'s flash implementation still works:');
+$t->diag('03. Test getFlashAndDelete()');
+$user->setFlash('get_and_delete_test', 1);
+$user->setFlash('get_and_delete_test', 2, $ns = 'extra');
+
+$t->is($user->getFlashAndDelete('get_and_delete_test'), 1);
+$t->is($user->hasFlash('get_and_delete_test'), false);
+$t->is($user->getFlashAndDelete('get_and_delete_test', null, $ns = 'extra'), 2);
+$t->is($user->hasFlash('get_and_delete_test', $ns = 'extra'), false);
+
+$t->diag('04. Make sure symfony\'s flash implementation still works:');
 // ->setFlash() ->getFlash() ->hasFlash()
 $t->diag('->setFlash() ->getFlash() ->hasFlash()');
 $user->initialize($dispatcher, $storage, array('use_flash' => true));

@@ -201,6 +201,8 @@ class IceSecurityUser extends sfBasicSecurityUser
   /**
    * Sets a flash variable that will be passed to the very next action.
    *
+   * The $persist param can be omitted
+   *
    * @param  string  $name       The name of the flash variable
    * @param  string  $value      The value of the flash variable
    * @param  bool    $persist    true if the flash have to persist for the following request (true by default)
@@ -269,6 +271,41 @@ class IceSecurityUser extends sfBasicSecurityUser
     }
 
     $value = $this->getAttribute($name, $default, $namespace.'/flash');
+
+    return $value;
+  }
+
+  /**
+   * Gets a flash variable and immediately removes it, not waiting for the
+   * next request
+   *
+   * @param  string   $name       The name of the flash variable
+   * @param  string   $default    The default value returned when named variable does not exist.
+   * @param  string   $namespace
+   *
+   * @return mixed The value of the flash variable
+   */
+  public function getFlashAndDelete($name, $default = null, $namespace = null)
+  {
+    if (!$this->options['use_flash'])
+    {
+      return $default;
+    }
+
+    if (null == $namespace)
+    {
+      $namespace = 'symfony/user/sfUser';
+    }
+    else
+    {
+      $namespace = 'symfony/user/extra-flash/'.$namespace;
+    }
+
+    $value = $this->getAttribute($name, $default, $namespace.'/flash');
+
+    // remove the flash
+    $this->attributeHolder->remove($name, null, $namespace.'/flash');
+    $this->attributeHolder->remove($name, null, $namespace.'/flash/remove');
 
     return $value;
   }
