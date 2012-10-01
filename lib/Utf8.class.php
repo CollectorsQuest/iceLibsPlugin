@@ -671,7 +671,7 @@ class Utf8
     {
       $words = explode(' ', $input);
       $result = $words[0];
-      $i = 1;
+      $i = 0;
       do
       {
         $i++;
