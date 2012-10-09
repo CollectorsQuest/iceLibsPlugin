@@ -266,7 +266,7 @@ class IceStatic
     }
 
     $b = @get_browser(null, false);
-    if ($b && $b->crawler === '1')
+    if ($b && property_exists($b, 'crowler') && $b->crawler === '1')
     {
       $crawler = Utf8::slugify($b->browser, '-', true, true);
 
@@ -274,9 +274,9 @@ class IceStatic
        * We need to verify the top crawlers
        */
       $spiders = array(
-        'googlebot' => "/\.googlebot\.com$/i",
-        'msnbot' => "/search\.msn\.com$/i",
-        'yahoo-slurp' => "/crawl\.yahoo\.net$/i"
+        'googlebot' => '/\.googlebot\.com$/i',
+        'msnbot' => '/search\.msn\.com$/i',
+        'yahoo-slurp' => '/crawl\.yahoo\.net$/i'
       );
 
       foreach ($spiders as $name => $pattern)
