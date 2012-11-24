@@ -23,31 +23,34 @@ def crawl(path, max_depth=nil, include_directories=false, depth=0, &block)
  end
 end
 
-def lessc(input, output, web)
+def lessc(input, output, web, gzip=true)
   print "[" + Time.now.strftime("%I:%M:%S") + "] compiling #{input.inspect.sub(web, '')}... "
   system "lessc #{input} #{output}"
 
   # Minify if possible
   system "lessc --yui-compress #{input} #{output.gsub('.css', '.min.css')}"
-
-  # Gzip if possible
-  if File.exists?(output.gsub('.css', '.min.css'))
-    system "cat #{output.gsub('.css', '.min.css')} | gzip -9 -c > #{output}.gz"
+  if gzip
+    # Gzip if possible
+    if File.exists?(output.gsub('.css', '.min.css'))
+      system "cat #{output.gsub('.css', '.min.css')} | gzip -9 -c > #{output}.gz"
+    end
   end
 
   puts 'done'
 end
 
-def plessc(input, output, web)
+def plessc(input, output, web, gzip=true)
   print "[" + Time.now.strftime("%I:%M:%S") + "] compiling #{input.inspect.sub(web, '')}... "
   system "php #{File.dirname(__FILE__)}/../data/bin/plessc -f=lessjs #{input} #{output}"
 
   # Minify if possible
   system "php #{File.dirname(__FILE__)}/../data/bin/plessc -f=compressed #{input} #{output.gsub('.css', '.min.css')}"
 
-  # Gzip if possible
-  if File.exists?(output.gsub('.css', '.min.css'))
-    system "cat #{output.gsub('.css', '.min.css')} | gzip -9 -c > #{output}.gz"
+  if gzip
+    # Gzip if possible
+    if File.exists?(output.gsub('.css', '.min.css'))
+      system "cat #{output.gsub('.css', '.min.css')} | gzip -9 -c > #{output}.gz"
+    end
   end
 
   puts 'done'
