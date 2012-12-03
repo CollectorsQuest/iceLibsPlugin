@@ -9,9 +9,11 @@ class IceWebResponse extends sfWebResponse
    */
   protected $_context = 'Icepique';
 
-  /* @var array */
+  /** @var array */
   private $_delayed_functions = array();
 
+  /** @var integer */
+  protected $bulk_update_delta_limit = 5;
 
   public function sendContent()
   {
@@ -77,51 +79,73 @@ class IceWebResponse extends sfWebResponse
       $sf_context->getStorage()->shutdown();
     }
 
-    if ($functions = $this->getDelayedFunctions())
+    if (( $functions = $this->getDelayedFunctions() ))
     foreach ($functions as $function)
     {
-      if (is_array($function['callback']) && in_array($function['callback'][1], array('setNumberOf', 'setNumViews')))
+      // handle delayed count column increase/decrease, so that fewer UPDATE statements are executed
+      if (
+        is_array($function['callback']) &&
+        $function['callback'][0] instanceof BaseObject &&
+        in_array($function['callback'][1], array('setNumberOf', 'updateColumn', 'setNumViews')) &&
+        method_exists($function['callback'][0], 'getPrimaryKey')
+      )
       {
-        if (is_object($function['callback'][0]) && method_exists($function['callback'][0], 'getId'))
+        $memcache = IceStatic::getMemcacheCache();
+        $operator = $param = $number = null;
+
+        // if the function has two params, and the second one is in the format +/-(num)
+        // then we are dealing with either setNumberOf or updateColumn
+        if (count($function['params']) == 2 && in_array(substr($function['params'][1], 0, 1), array('+', '-')))
         {
-          $memcache = IceStatic::getMemcacheCache();
+          // and our operator is the first char of the second param
+          $operator = substr($function['params'][1], 0, 1);
 
-          $key = implode('-', array(
-            $this->_context, get_class($function['callback'][0]), $function['callback'][0]->getId(),
-            $function['callback'][1], $function['params'][0]
-          ));
-          $operator = $param = $number = null;
+          // and the number is the rest of the param
+          $number = (int) substr($function['params'][1], 1);
 
-          if (count($function['params']) == 2 && in_array(substr($function['params'][1], 0, 1), array('+', '-')))
+          // and we set a reference var to the "number" param
+          $param  = &$function['params'][1];
+        }
+        // if the function has only one param of format +/-(num)
+        // then we are dealing with setNumViews
+        elseif (count($function['params']) == 1 && in_array(substr($function['params'][0], 0, 1), array('+', '-')))
+        {
+          // and our operator is the first char of the param
+          $operator = substr($function['params'][0], 0, 1);
+
+          // and the number is the rest of the param
+          $number = (int) substr($function['params'][0], 1);
+
+          // and we set a reference var to the "number" param
+          $param  = &$function['params'][0];
+        }
+
+        // key format: context-modelClass-modelPK-"setNumberOf/setNumViews/updateColumn"-columnName/number-operator
+        $key = implode('-', array(
+          $this->_context, get_class($function['callback'][0]), $function['callback'][0]->getPrimaryKey(),
+          $function['callback'][1], $function['params'][0], $operator
+        ));
+
+        // if we managed to extract a number from the function parameters
+        if ($number !== null && $param !== null && $operator !== null)
+        {
+          // increment our delta for this object/function/column/operator
+          $delta = (int) $memcache->increment($key, $number);
+
+          // if our delta has reached the limit
+          if ($delta % $this->bulk_update_delta_limit == 0)
           {
-            $operator = substr($function['params'][1], 0, 1);
+            // reset it in memcache
+            $memcache->decrement($key, $delta);
 
-            $number = (int) substr($function['params'][1], 1);
-            $param  = &$function['params'][1];
+            // and set the function number param through our reference var
+            // so that we will now execute a bulk column modification;
+            $param = $operator . $delta;
           }
-          elseif (count($function['params']) == 1 && in_array(substr($function['params'][0], 0, 1), array('+', '-')))
+          else
           {
-            $operator = '+';
-
-            $number = (int) substr($function['params'][0], 1);
-            $param  = &$function['params'][0];
-          }
-
-          if ($number !== null && $param !== null)
-          {
-            $i = (int) $memcache->increment($key, $number);
-
-            if ($i % 5 == 0)
-            {
-              $number = ($i === 0) ? 1 : $i;
-              $memcache->decrement($key, $number);
-            }
-            else
-            {
-              continue;
-            }
-
-            $param = $operator . $number;
+            // otherwize skip the execution of this delayed function
+            continue;
           }
         }
       }
@@ -142,16 +166,15 @@ class IceWebResponse extends sfWebResponse
       {
         ;
       }
-    }
-
-  }
+    } // foreach delayed function
+  } // send()
 
   public function addDelayedFunction($callback, $params = array())
   {
     // In development we do not want to delay the execution
     if (sfConfig::get('sf_environment') == 'prod')
     {
-      $this->_delayed_callbacks[] = array('callback' => $callback, 'params' => $params);
+      $this->_delayed_functions[] = array('callback' => $callback, 'params' => $params);
     }
     else
     {
@@ -182,4 +205,17 @@ class IceWebResponse extends sfWebResponse
       $this->addMeta('ICBM', $geo_location->getLatitude().','. $geo_location->getLongitude());
     }
   }
+
+  /**
+   * Delayed functions that execute bulk updates on counter columns will honor
+   * this limit, and execute a bulk update only once it's reached for the particular
+   * model object / function / column / operator
+   *
+   * @param integer $value
+   */
+  public function setBulkUpdateDeltaLimit($value)
+  {
+    $this->bulk_update_delta_limit = (int) $value;
+  }
+
 }
