@@ -156,7 +156,7 @@ class IceWebResponse extends sfWebResponse
 
         if (
           is_array($function['callback']) && ($function['callback'][0] instanceof BaseObject) &&
-          $callback[1] != 'save' && method_exists($callback[0], 'save')
+          $function['callback'][1] != 'save' && method_exists($function['callback'][0], 'save')
         )
         {
           $function['callback'][0]->save();
