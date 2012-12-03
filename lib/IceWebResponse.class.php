@@ -9,50 +9,48 @@ class IceWebResponse extends sfWebResponse
    */
   protected $_context = 'Icepique';
 
+  /* @var array */
   private $_delayed_functions = array();
 
 
   public function sendContent()
   {
-    if (!$this->headerOnly)
+    /**
+     * @see http://php-fpm.org/wiki/Features#fastcgi_finish_request.28.29
+     */
+    if (function_exists('fastcgi_finish_request'))
     {
-      /**
-       * @see http://php-fpm.org/wiki/Features#fastcgi_finish_request.28.29
-       */
-      if (function_exists('fastcgi_finish_request'))
-      {
-        parent::sendContent();
+      parent::sendContent();
 
-        fastcgi_finish_request();
-      }
+      fastcgi_finish_request();
+    }
 
-      // allow to work in test env
-      elseif (!$this->options['send_http_headers'])
-      {
-        parent::sendContent();
-      }
+    // allow to work in test env
+    elseif (!$this->options['send_http_headers'])
+    {
+      parent::sendContent();
+    }
 
-      /**
-       * @see http://www.php.net/manual/en/features.connection-handling.php
-       */
-      else
-      {
-        set_time_limit(30);
-        ignore_user_abort(true);
+    /**
+     * @see http://www.php.net/manual/en/features.connection-handling.php
+     */
+    else
+    {
+      set_time_limit(30);
+      ignore_user_abort(true);
 
-        ob_end_clean();
+      ob_end_clean();
 
-        header("Connection: close\r\n");
-        header("Content-Encoding: none\r\n");
+      header("Connection: close\r\n");
+      header("Content-Encoding: none\r\n");
 
-        ob_start();
-        parent::sendContent();
-        $size = ob_get_length();
-        header("Content-Length: $size");
+      ob_start();
+      parent::sendContent();
+      $size = ob_get_length();
+      header('Content-Length: '. $size);
 
-        ob_end_flush();
-        flush();
-      }
+      ob_end_flush();
+      flush();
     }
   }
 
@@ -63,12 +61,18 @@ class IceWebResponse extends sfWebResponse
   {
     // Send the headers no matter what
     $this->sendHttpHeaders();
-    $this->sendContent();
+
+    // Send the content only if needed/requested
+    if (!$this->headerOnly)
+    {
+      $this->sendContent();
+    }
 
     if (
       ($sf_context = sfContext::getInstance()) &&
       sfContext::getInstance()->has('user')
-    ) {
+    )
+    {
       $sf_context->getUser()->shutdown();
       $sf_context->getStorage()->shutdown();
     }
@@ -82,7 +86,10 @@ class IceWebResponse extends sfWebResponse
         {
           $memcache = IceStatic::getMemcacheCache();
 
-          $key = $this->_context .'-'. get_class($function['callback'][0]) .'-'. $function['callback'][0]->getId() .'-'. $function['callback'][1] .'-'. $function['params'][0];
+          $key = implode('-', array(
+            $this->_context, get_class($function['callback'][0]), $function['callback'][0]->getId(),
+            $function['callback'][1], $function['params'][0]
+          ));
           $operator = $param = $number = null;
 
           if (count($function['params']) == 2 && in_array(substr($function['params'][1], 0, 1), array('+', '-')))
@@ -123,15 +130,18 @@ class IceWebResponse extends sfWebResponse
       {
         call_user_func_array($function['callback'], $function['params']);
 
-        if (is_array($function['callback']) && ($function['callback'][0] instanceof BaseObject) && method_exists($function['callback'][0], 'save'))
+        if (
+          is_array($function['callback']) && ($function['callback'][0] instanceof BaseObject) &&
+          $function['callback'][0]->isModified() && method_exists($function['callback'][0], 'save')
+        )
         {
-          if ($function['callback'][0]->isModified())
-          {
-            $function['callback'][0]->save();
-          }
+          $function['callback'][0]->save();
         }
       }
-      catch (Exception $e) { ; }
+      catch (Exception $e)
+      {
+        ;
+      }
     }
 
   }
@@ -147,9 +157,12 @@ class IceWebResponse extends sfWebResponse
     {
       call_user_func_array($callback, $params);
 
-      if (is_array($callback) && ($callback[0] instanceof BaseObject) && $callback[1] != 'save' && method_exists($callback[0], 'save'))
+      if (
+        is_array($callback) && ($callback[0] instanceof BaseObject) && $callback[0]->isModified() &&
+        $callback[1] != 'save' && method_exists($callback[0], 'save')
+      )
       {
-        if ($callback[0]->isModified()) { $callback[0]->save(); }
+        $callback[0]->save();
       }
     }
   }
