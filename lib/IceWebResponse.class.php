@@ -123,7 +123,7 @@ class IceWebResponse extends sfWebResponse
         // key format: context-modelClass-modelPK-"setNumberOf/setNumViews/updateColumn"-columnName/number-operator
         $key = implode('-', array(
           $this->_context, get_class($function['callback'][0]),
-          implode('-', $function['callback'][0]->getPrimaryKey()),
+          implode('-', (array) $function['callback'][0]->getPrimaryKey()),
           $function['callback'][1], $function['params'][0], $operator
         ));
 
