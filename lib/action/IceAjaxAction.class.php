@@ -55,13 +55,40 @@ abstract class IceAjaxAction extends sfAction
     return sfView::NONE;
   }
 
-  protected function error($title, $message, $fastcgi_finish_request = false)
+  /**
+   * Render an ajax error. Two method signatures are allowed:
+   *
+   *  - error($title, $message) outputs the following JSON:
+   *    {
+   *      Error: { Title: '$title', Message: '$message/$title' }
+   *    }
+   *
+   * or you can give an array to be directly outputted as JSON:
+   *  - error(array('error' => 'message'))
+   *    {
+   *      error: 'message'
+   *    }
+   *
+   * @param     string|array $title
+   * @param     string|null $message
+   * @param     boolean $fastcgi_finish_request
+   *
+   * @return    sfView::NONE
+   */
+  protected function error($title, $message = null, $fastcgi_finish_request = false)
   {
     $this->getResponse()->setStatusCode(500);
 
-    $json = $this->json(array(
-      'Error' => array('Title' => $title, 'Message' => $message)
-    ));
+    if (is_array($title))
+    {
+      $json = $this->json($title);
+    }
+    else
+    {
+      $json = $this->json(array(
+        'Error' => array('Title' => $title, 'Message' => $message ?: $title)
+      ));
+    }
 
     if ($fastcgi_finish_request === true)
     {
