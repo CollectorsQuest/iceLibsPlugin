@@ -55,6 +55,20 @@ abstract class IceAjaxAction extends sfAction
     return sfView::NONE;
   }
 
+  /**
+   * Output a pre-determined error format as json:
+   * {
+   *   Error: {
+   *     Title: $title,
+   *     Message: $message
+   *   }
+   * }
+   *
+   * @param     string $title
+   * @param     string $message
+   * @param     boolean $fastcgi_finish_request
+   * @return    sfView::NONE
+   */
   protected function error($title, $message, $fastcgi_finish_request = false)
   {
     $this->getResponse()->setStatusCode(500);
@@ -62,6 +76,33 @@ abstract class IceAjaxAction extends sfAction
     $json = $this->json(array(
       'Error' => array('Title' => $title, 'Message' => $message)
     ));
+
+    if ($fastcgi_finish_request === true)
+    {
+      echo $json;
+      fastcgi_finish_request();
+    }
+    else
+    {
+      $this->output($json);
+    }
+
+    return sfView::NONE;
+  }
+
+  /**
+   * Output a custom error array as JSON
+   *
+   * @param     array $to_json
+   * @param     integer $status_code
+   * @param     boolean $fastcgi_finish_request
+   * @return    sfView::NONE
+   */
+  protected function errors(array $to_json, $status_code = 500, $fastcgi_finish_request = false)
+  {
+    $this->getResponse()->setStatusCode($status_code);
+
+    $json = $this->json($to_json);
 
     if ($fastcgi_finish_request === true)
     {
