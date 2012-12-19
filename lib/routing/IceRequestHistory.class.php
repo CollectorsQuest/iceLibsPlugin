@@ -4,7 +4,7 @@ class IceRequestHistory
 {
   public static function getHistory()
   {
-    return sfContext::getInstance()->getUser()->getAttribute('request_history', '', 'IceRequestHistory');
+    return sfContext::getInstance()->getUser()->getAttribute('request_history', array(), 'IceRequestHistory');
   }
 
   public static function getCurrentRequestKey()
@@ -21,10 +21,12 @@ class IceRequestHistory
   {
     $history = self::getHistory();
     
-    if( array_key_exists($key, $history) )
+    if (array_key_exists($key, $history))
     {
       return $history[$key];
-    } else {
+    }
+    else
+    {
       return false;
     }
   }
@@ -58,7 +60,7 @@ class IceRequestHistory
   {
     $uri = self::getRequestUriFromCurrent($num);
 
-    if( ! $uri )
+    if (!$uri)
     {
       $history = self::getHistory();
       $uri = array_pop($history);
